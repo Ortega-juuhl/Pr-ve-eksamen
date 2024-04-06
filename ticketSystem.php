@@ -11,16 +11,15 @@ if (isset($_SESSION['userID'])) {
     // Check if the request method is POST
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Sanitize and validate input data
-        $navn = $_POST['navn'];
-        $beskrivelse = $_POST['beskrivelse'];
-        $epost = $_POST['epost'];
+        $title = $_POST['title'];
+        $description = $_POST['description'];
 
         // Create the SQL query to insert the data
-        $insert_query = "INSERT INTO ticketsystem (userID, navn, description, epost) VALUES ('$userID', '$navn', '$beskrivelse', '$epost')";
+        $insert_query = "INSERT INTO ticketsystem (userID, description, title, CategoryID) VALUES ('$userID', '$description', '$title', '1')";
 
         // Execute the SQL query
         if (mysqli_query($conn, $insert_query)) {
-            echo "Your ticket has been sent in.";
+            echo "Your ticket has been sent in. <a href=\"myTicket.php\">Ticket status</a>";
         } else {
             echo "Error: " . $insert_query . "<br>" . mysqli_error($conn);
         }

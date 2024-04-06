@@ -7,15 +7,18 @@ include 'db_connect.php'; // Include the file containing your database connectio
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $name = $_POST['name'];
+    $email = $_POST['email'];
 
-        // Example hashing (replace with appropriate secure password hashing)
+
+
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert user data into 'users' table
-        $insert_query = "INSERT INTO user (username, password) VALUES ('$username', '$hashed_password')";
+        $insert_query = "INSERT INTO user (username, password, name, email) VALUES ('$username', '$hashed_password', '$name', '$email')";
 
         if ($conn->query($insert_query) === TRUE) {
-            echo 'Your account is regiserd, please log in.';
+            header ("Location: login.html");
         } else {
             echo "Error: " . $insert_query . "<br>" . $conn->error;
         }
