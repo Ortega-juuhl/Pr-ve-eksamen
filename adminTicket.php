@@ -1,36 +1,53 @@
 <?php
-include 'db_connect.php';
+session_start();
 
-$display_query = "SELECT * FROM ticketsystem";
-$result = mysqli_query($conn, $display_query);
+include 'db_connect.php'; // Include the file containing your database connection code
 
-if ($result) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo "Ticket ID: " . $row['ticketID'] . "<br>";
-        echo "Navn: " . $row['navn'] . "<br>";
-        echo "Epost: " . $row['epost'] . "<br>";
-        echo "Description: " . $row['description'] . "<br>";
-        //echo "Ticket status:" . $row['Category_name WHERE CategoryID = userID????'];
+if (isset($_SESSION['userID'])) {
+    $userID = $_SESSION['userID'];
+
+    // Check if the user is an admin
+    $check_admin_query = "SELECT is_admin FROM user WHERE userID = $userID";
+    $check_admin_result = mysqli_query($conn, $check_admin_query);
+
+    if ($check_admin_result) {
+        $row = mysqli_fetch_assoc($check_admin_result);
+        $is_admin = $row['is_admin'];
+
+        if ($is_admin) {
+            // Display tickets with all statuses for admin
+            $display_query = "SELECT * FROM ticketsystem";
+        } else {
+            // Display tickets with only certain statuses for non-admin users
+            $display_query = "SELECT * FROM ticketsystem WHERE CategoryID IN (1, 2)"; // Adjust statuses as needed
+        }
+
+        // Execute the SQL query
+        $result = mysqli_query($conn, $display_query);
+
+        // Check if the query was successful
+        if ($result) {
+            // Display the results
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo "Ticket ID: " . $row['ticketID'] . "<br>";
+                echo "Title: " . $row['title'] . "<br>";
+                echo "Description: " . $row['description'] . "<br>";
+                echo "<br>";
+            }
+        } else {
+            // Display an error message if the query fails
+            echo "Error: " . mysqli_error($conn);
+        }
+    } else {
+        // Display an error message if the admin check query fails
+        echo "Error: " . mysqli_error($conn);
     }
 } else {
-    echo "Ingen tickets.";
+    // Redirect to login page if user is not logged in
+    header("location: login.html");
+    exit(); // Terminate script execution after redirection
 }
+
+// Close the database connection
 mysqli_close($conn);
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
-</head>
-<body>
-    <Select>
-        <option>Ikke tatt</option>
-        <option>Tatt</option>
-        <option>Ferdig</option>
-    </Select>
-    
-</body>
-</html>

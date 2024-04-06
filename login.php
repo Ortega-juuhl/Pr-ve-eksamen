@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Create a SQL query to retrieve user details based on the provided username
-    $sql = "SELECT userID, username, password FROM user WHERE username = '$username'";
+    $sql = "SELECT userID, username, password, is_admin FROM user WHERE username = '$username'";
     
     // Execute the SQL query
     $result = $conn->query($sql);
@@ -25,9 +25,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Verify if the provided password matches the hashed password in the database
         if (password_verify($password, $row['password'])) {
             // Set session variables upon successful login
-            $_SESSION['userID'] = $row['userID']; // Store the user ID in the session            
-            // Redirect the user to the index.php page (or any desired page after successful login)
-            header('Location: ticketSystem.html');
+            $_SESSION['userID'] = $row['userID']; // Store the user ID in the session  
+            
+            // Check if the user is an admin
+            if ($row['is_admin']) {
+                // Redirect the admin to the admin page
+                header('Location: adminTicket.php');
+            } else {
+                // Redirect regular users to the regular user page
+                header('Location: ticketSystem.html');
+            }
             exit(); // Terminate the script after redirection
         } else {
             // Password verification failed
