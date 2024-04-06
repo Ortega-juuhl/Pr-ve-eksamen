@@ -1,53 +1,58 @@
 <?php
+// Start the session to manage user sessions
 session_start();
 
-include 'db_connect.php'; // Include the file containing your database connection code
+// Include the file containing the database connection code
+include 'db_connect.php';
 
-if (isset($_SESSION['userID'])) {
-    $userID = $_SESSION['userID'];
+// Check if the user is logged in and is an admin
+if (isset($_SESSION['userID']) && $_SESSION['is_admin']) {
+    // Fetch all tickets from the database
+    $query = "SELECT * FROM ticketsystem";
+    $result = mysqli_query($conn, $query);
 
-    // Check if the user is an admin
-    $check_admin_query = "SELECT is_admin FROM user WHERE userID = $userID";
-    $check_admin_result = mysqli_query($conn, $check_admin_query);
-
-    if ($check_admin_result) {
-        $row = mysqli_fetch_assoc($check_admin_result);
-        $is_admin = $row['is_admin'];
-
-        if ($is_admin) {
-            // Display tickets with all statuses for admin
-            $display_query = "SELECT * FROM ticketsystem";
-        } else {
-            // Display tickets with only certain statuses for non-admin users
-            $display_query = "SELECT * FROM ticketsystem WHERE CategoryID IN (1, 2)"; // Adjust statuses as needed
+    if ($result) {
+        // Display a table with all tickets
+        echo "<h2>All Tickets</h2>";
+        echo "<table border='1'>";
+        echo "<tr><th>Ticket ID</th><th>User ID</th><th>Title</th><th>Description</th><th>Status</th><th>Action</th></tr>";
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['ticketID'] . "</td>";
+            echo "<td>" . $row['userID'] . "</td>";
+            echo "<td>" . $row['title'] . "</td>";
+            echo "<td>" . $row['description'] . "</td>";
+            echo "<td>" . $row['CategoryID'] . "</td>";
+            echo "<td><form method='post'><input type='hidden' name='ticketID' value='" . $row['ticketID'] . "'><select name='new_status'><option value='1'>Not Taken</option><option value='2'>Under Progress</option><option value='3'>Finished</option></select><button type='submit' name='update_status'>Update Status</button></form></td>";
+            echo "</tr>";
         }
-
-        // Execute the SQL query
-        $result = mysqli_query($conn, $display_query);
-
-        // Check if the query was successful
-        if ($result) {
-            // Display the results
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo "Ticket ID: " . $row['ticketID'] . "<br>";
-                echo "Title: " . $row['title'] . "<br>";
-                echo "Description: " . $row['description'] . "<br>";
-                echo "<br>";
-            }
-        } else {
-            // Display an error message if the query fails
-            echo "Error: " . mysqli_error($conn);
-        }
+        echo "</table>";
     } else {
-        // Display an error message if the admin check query fails
-        echo "Error: " . mysqli_error($conn);
+        echo "Error fetching tickets: " . mysqli_error($conn);
     }
-} else {
-    // Redirect to login page if user is not logged in
-    header("location: login.html");
-    exit(); // Terminate script execution after redirection
-}
 
-// Close the database connection
-mysqli_close($conn);
+    // Check if the form for updating status is submitted
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_status'])) {
+        // Retrieve ticket ID and new status from the form submission
+        $ticketID = $_POST['ticketID'];
+        $newStatus = $_POST['new_status'];
+
+        // Update the status of the ticket in the database
+        $update_query = "UPDATE ticketsystem SET CategoryID = $newStatus WHERE ticketID = $ticketID";
+        $update_result = mysqli_query($conn, $update_query);
+
+        if ($update_result) {
+            echo "<p>Status updated successfully.</p>";
+        } else {
+            echo "<p>Error updating status: " . mysqli_error($conn) . "</p>";
+        }
+    }
+
+    // Close the database connection
+    mysqli_close($conn);
+} else {
+    // Redirect to the login page if the user is not logged in or is not an admin
+    header("location: login.html");
+    exit();
+}
 ?>

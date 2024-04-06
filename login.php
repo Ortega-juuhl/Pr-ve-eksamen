@@ -29,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // Check if the user is an admin
             if ($row['is_admin']) {
+                $_SESSION['is_admin'] = $row['is_admin'];
                 // Redirect the admin to the admin page
                 header('Location: adminTicket.php');
             } else {
