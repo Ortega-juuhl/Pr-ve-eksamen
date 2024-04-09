@@ -11,42 +11,31 @@ if(isset($_SESSION['userID'])) {
         $select_password = "SELECT password FROM user WHERE userID = '$userID'";
         $result_password = mysqli_query($conn, $select_password);
 
-        // Check if the query was successful
         if ($result_password) {
-            // Fetch the result set
             $row_password = mysqli_fetch_assoc($result_password);
 
-            if ($row_password) {
-                $old_password_db = $row_password['password'];
+            if ($row_password && password_verify($old_password, $row_password['password'])) {
+                $n_password = mysqli_real_escape_string($conn, $_POST['n_password']);
+                $cn_password = mysqli_real_escape_string($conn, $_POST['cn_password']);
 
-                // Verify the old password using password_verify()
-                if (password_verify($old_password, $old_password_db)) {
-                    $n_password = mysqli_real_escape_string($conn, $_POST['n_password']);
-                    $cn_password = mysqli_real_escape_string($conn, $_POST['cn_password']);
+                if ($n_password == $cn_password) {
+                    $hashed_password = password_hash($n_password, PASSWORD_DEFAULT);
 
-                    if ($n_password == $cn_password) {
-                        // Hash the new password
-                        $hashed_password = password_hash($n_password, PASSWORD_DEFAULT);
+                    $update_query = "UPDATE user SET password = '$hashed_password' WHERE userID = '$userID'";
+                    $result_update = mysqli_query($conn, $update_query);
 
-                        $update_query = "UPDATE user SET password = '$hashed_password' WHERE userID = '$userID'";
-                        $result_update = mysqli_query($conn, $update_query);
-
-                        if($result_update) {
-                            echo "Password updated successfully.";
-                        } else {
-                            echo "Error updating password: " . mysqli_error($conn);
-                        }
+                    if($result_update) {
+                        echo "Password updated successfully.";
                     } else {
-                        echo "Passwords don't match.";
+                        echo "Error updating password: " . mysqli_error($conn);
                     }
                 } else {
-                    echo "Incorrect old password.";
+                    echo "Passwords don't match.";
                 }
             } else {
-                echo "Error: Unable to fetch password from the database.";
+                echo "Incorrect old password.";
             }
         } else {
-            // Query failed, print error
             echo "Error: " . mysqli_error($conn);
         }
     } else {

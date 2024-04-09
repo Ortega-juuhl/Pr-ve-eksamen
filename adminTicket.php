@@ -47,9 +47,7 @@ if (isset($_SESSION['userID']) && $_SESSION['is_admin']) {
             echo "<p>Error updating status: " . mysqli_error($conn) . "</p>";
         }
     }
-
-    // Close the database connection
-    mysqli_close($conn);
+    
 } else {
     // Redirect to the login page if the user is not logged in or is not an admin
     header("location: login.html");

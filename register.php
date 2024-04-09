@@ -9,11 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $name = $_POST['name'];
     $email = $_POST['email'];
-
-
-
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
         // Insert user data into 'users' table
         $insert_query = "INSERT INTO user (username, password, name, email) VALUES ('$username', '$hashed_password', '$name', '$email')";
 
